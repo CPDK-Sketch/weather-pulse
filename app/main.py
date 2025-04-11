@@ -1,27 +1,40 @@
 import requests
-import sys
-from config import API_KEY, BASE_URL
+import os
+from dotenv import load_dotenv
 
+# Load variables from .env file
+load_dotenv()
+
+# Get API key from environment variable
+API_KEY = os.getenv("WEATHER_API_KEY")
+
+# Function to get weather info
 def get_weather(city):
-    params = {
-        'key': API_KEY,
-        'q': city
-    }
+    print(f"\nGetting weather for: {city}")
 
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
+    # API endpoint with parameters
+    url = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={city}"
 
+    # Make a request to the API
+    response = requests.get(url)
+
+    # If response is successful
     if response.status_code == 200:
-        print(f"Weather in {city}:")
-        print(f"Temperature: {data['current']['temp_c']}°C")
-        print(f"Condition: {data['current']['condition']['text']}")
-        print(f"Wind: {data['current']['wind_kph']} kph")
-        print(f"Humidity: {data['current']['humidity']}%")
-    else:
-        print("Error:", data.get("error", {}).get("message", "Failed to get data."))
+        data = response.json()
+        location = data['location']['name']
+        temp_c = data['current']['temp_c']
+        condition = data['current']['condition']['text']
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python main.py <city>")
+        print(f"📍 Location: {location}")
+        print(f"🌡️ Temperature: {temp_c}°C")
+        print(f"⛅ Condition: {condition}\n")
     else:
-        get_weather(sys.argv[1])
+        print("❌ Error getting weather. Please check the city name or API key.\n")
+
+# This runs when we run the file directly
+if __name__ == "__main__":
+    # Interactive input: ask the user for city
+    city = input("Enter city name: ")  # Prompt the user to enter a city name
+
+    # Call function
+    get_weather(city)
